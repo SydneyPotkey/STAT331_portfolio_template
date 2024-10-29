@@ -23,6 +23,10 @@ execute:
 
 ```{r}
 #| label: wd-1-csv
+#| message: false
+# code chunk for importing the data
+evals <- read_csv(here::here("data",
+                             "teacher_evals.csv"))
 
 ```
 
