@@ -21,10 +21,14 @@ execute:
 
 -   `csv`
 
+Lab 3 Set up
+
 ```{r}
 #| label: wd-1-csv
 #| message: false
-# code chunk for importing the data
+
+
+
 evals <- read_csv(here::here("data",
                              "teacher_evals.csv"))
 
@@ -32,52 +36,148 @@ evals <- read_csv(here::here("data",
 
 -   `xlsx`
 
+Practice Activity 4 Set up
+
 ```{r}
 #| label: wd-1-xlsx
+
+#From PA4
+
+military <- read_xlsx(here::here("data", 
+                                 "gov_spending_per_capita.xlsx"), 
+                      sheet = "Share of Govt. spending", 
+                      skip  = 6, 
+                      n_max = 199 )
 
 ```
 
 -   `txt`
+Check in 2.3
 
 ```{r}
 #| label: wd-1-txt
 
+# From Check in 2.3 
+
+ages<- read_delim("Week 2/week 2 data/ages_space.txt")
+
 ```
 
-**WD-2: I can select necessary columns from a dataset.**
+**WD-2: I can select necessary columns from a data set.**
+
+Lab 4 Question 4 revised to fix the comments below 
+
+*You need to summarize each region for each year!*
+
+*Can you give your column names better titles, so the reader knows what "2008" and "2018" represent? What are the values stored in these columns?*
 
 ```{r}
 #| label: wd-2
 
+# Lab 4 Question 5
+
+ca_childcare |>
+   group_by(region, 
+            study_year) |>
+  summarize(Median_Income = median(mhi_2018)) |>
+   pivot_wider(id_cols = region,
+               names_from = study_year,
+               values_from = Median_Income) |>
+   select( `2018`, `2008`) |>
+  rename("Median_Income_2008" = `2008`,
+         "Median_Income_2018" = `2018`) |>
+  arrange(Median_Income_2018)
+
+
+
+
 ```
 
-**WD-3: I can filter rows from a dataframe for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
+**WD-3: I can filter rows from a data frame for a *variety* of data types (e.g., numeric, integer, character, factor, date).**
 
 -   numeric
 
+Lab 3 Question 4
+
 ```{r}
 #| label: wd-3-numeric
+
+
+
+teacher_evals_clean <- evals|>
+  rename(sex = gender)|>
+  filter(no_participants > 10)|>
+  mutate(teacher_id = as.factor(teacher_id))|>
+  select(course_id,
+         teacher_id,
+         question_no,
+         no_participants,
+         resp_share,
+         SET_score_avg, 
+         percent_failed_cur,
+         academic_degree, 
+         seniority, sex)
+
 
 ```
 
 -   character -- specifically a string (example must use functions from **stringr**)
 
+Lab 5 revised to use better tools as stated in the comment recieved below 
+
+*Technically, the gym membership starts with 48Z How do you indicate that a string starts with specific characters?*
+
 ```{r}
 #| label: wd-3-string
+
+#Lab 5 
+
+suspect_membership <- get_fit_now_member|>
+  filter(membership_status == "gold",
+         str_detect(id, pattern = "^48Z"))
 
 ```
 
 -   factor
 
+Lab 5 Second step revised to collapse into one step 
+
+*Can you collapse these steps into one pipeline, that finds the witnesses and obtains their interviews in one dataset?*
+
+
 ```{r}
 #| label: wd-3-factor
+
+# Lab 5
+
+witnesses <- person |>
+  mutate("address_street_name" = as.factor(address_street_name)) |>
+   filter(address_street_name %in% c("Northwestern Dr",
+                                     "Franklin Ave")) |>
+   pivot_wider(names_from = address_street_name,
+               values_from = address_number) |>
+   slice_max(order_by = `Northwestern Dr`)
+ 
+ 
 
 ```
 
 -   date (example must use functions from **lubridate**)
 
+Lab 5 Step 1 revised to collapse into one pipeline 
+
+*Could you collapse these two steps into one step?*
+
+
 ```{r}
 #| label: wd-3-date
+
+
+sql_city_reports <- crime_scene_report|>
+  mutate(date = ymd(date))|>
+  filter(city == "SQL City",
+         type == "murder",
+         date == ymd(2018-01-15))
 
 ```
 
@@ -85,29 +185,100 @@ evals <- read_csv(here::here("data",
 
 -   numeric (using `as.numeric()` is not sufficient)
 
+Made up example using data from Lab 3
+I decided to use mutate to remove the "90" infront of the question number. 
+
 ```{r}
 #| label: wd-4-numeric
+
+teacher_evals |>
+  mutate("question_no" = question_no - 900)
 
 ```
 
 -   character -- specifically a string (example must use functions from **stringr**)
 
+Lab 4 Question 6 revised to hit all of the comments below
+*Nice work pivoting the age variable! Can you relabel the values, so your facets have better names? Can you reorder the levels so the facets are in the same order as mine?*
+
+*Your text is quite squished! The size of the text in my plot is not the default size, because it ends up being squished. Can you figure out how to resize the size of the text used in your plot?*
+
+*Can you reorder the colors in the legend so they appear in the same order as the lines in the plot?*
+
+*The final step is to match the colors and theme I used. Personally, I like theme_bw() and the “Accent” palette from the RColorBrewer package.*
+
 ```{r}
 #| label: wd-4-string
+
+childcare_by_age <- ca_childcare |>
+  pivot_longer(cols = starts_with("mc_"),
+               names_to = "age_group",
+               values_to = "median_price_by_age")|>
+  mutate(age_group = str_remove(age_group,
+    pattern = "^mc_"), 
+    age_group = fct_relevel(age_group, 
+                            "infant", 
+                            "toddler", 
+                            "preschool")) |>
+  select(age_group, 
+         median_price_by_age, 
+         region, 
+         study_year, 
+         mcsa, 
+         mhi_2018)
 
 ```
 
 -   factor (example must use functions from **forcats**)
 
+Lab 4 Question 6 revised to hit all of the comments below
+*Nice work pivoting the age variable! Can you relabel the values, so your facets have better names? Can you reorder the levels so the facets are in the same order as mine?*
+
+*Your text is quite squished! The size of the text in my plot is not the default size, because it ends up being squished. Can you figure out how to resize the size of the text used in your plot?*
+
+*Can you reorder the colors in the legend so they appear in the same order as the lines in the plot?*
+
+*The final step is to match the colors and theme I used. Personally, I like theme_bw() and the “Accent” palette from the RColorBrewer package.*
+
+
+
 ```{r}
 #| label: wd-4-factor
+
+childcare_by_age <- ca_childcare |>
+  pivot_longer(cols = starts_with("mc_"),
+               names_to = "age_group",
+               values_to = "median_price_by_age") |>
+  mutate(age_group = str_remove(age_group,
+    pattern = "^mc_"), 
+    age_group = fct_relevel(age_group, 
+                            "infant", 
+                            "toddler", 
+                            "preschool")) |>
+  select(age_group, 
+         median_price_by_age, 
+         region, 
+         study_year, 
+         mcsa, 
+         mhi_2018)
 
 ```
 
 -   date (example must use functions from **lubridate**)
 
+This is a made up example using Lab 5 data 
+Calculates the days since a crime was committed 
+
 ```{r}
 #| label: wd-4-date
+
+ 
+
+crime_scene_report |>
+  mutate(date = ymd(date), 
+         time_since_crime = as.period(Sys.Date()-date))
+
+
 
 ```
 
@@ -129,8 +300,15 @@ evals <- read_csv(here::here("data",
 
 -   `inner_join()`
 
+Lab 5 Third step
+
 ```{r}
 #| label: wd-5-inner
+
+witness_interviews <- inner_join(interview,
+                                 witnesses2,
+                                 by = join_by(person_id == id))
+
 
 ```
 
@@ -157,19 +335,52 @@ evals <- read_csv(here::here("data",
 
 ```
 
-**WD-7: I can pivot dataframes from long to wide and visa versa**
+**WD-7: I can pivot data frames from long to wide and visa versa**
 
 -   `pivot_longer()`
 
+Lab 4 Question 6 
+
+revised to use the starts_with function 
+
+
 ```{r}
 #| label: wd-7-long
+
+childcare_by_age <- ca_childcare |>
+  pivot_longer(cols = starts_with("mc_"),
+               names_to = "age_group",
+               values_to = "median_price_by_age") |>
+  mutate(age_group = str_remove(age_group,
+    pattern = "^mc_"),
+    age_group = fct_relevel(age_group,
+                            "infant",
+                            "toddler", 
+                            "preschool")) |>
+  select(age_group, 
+         median_price_by_age, 
+         region, 
+         study_year, 
+         mcsa, 
+         mhi_2018)
 
 ```
 
 -   `pivot_wider()`
 
+Lab 5 Second step revised to collapse into one step 
+
+*Can you collapse these steps into one pipeline, that finds the witnesses and obtains their interviews in one dataset?*
+
 ```{r}
 #| label: wd-7-wide
+
+witnesses <- person |>
+   filter(address_street_name %in% c("Northwestern Dr",
+                                     "Franklin Ave")) |>
+   pivot_wider(names_from = address_street_name,
+               values_from = address_number) |>
+   slice_max(order_by = `Northwestern Dr`)
 
 ```
 
@@ -183,15 +394,60 @@ I've done this in the following provided assignments:
 
 -   Example of **ggplot2** plotting
 
+Lab 4 Question 7 revised to fix the comments below 
+
+*What units are these measurements in?*
+
+*I would recommend looking into the scales package, which provides an easy method for getting $ signs on the plot labels, with the label_dollar() function!*
+
+
 ```{r}
 #| label: r-2-1
+
+#Lab 4 Question 7
+
+ggplot(data = infant_childcare, 
+       mapping = aes(x = mhi_2018,
+                     y = Median_Weekly_Price)) +
+  geom_point(alpha = .7,
+             color = "steelblue") +
+  geom_smooth(method = "lm",
+              color = "grey20") +
+  labs(x = "Median Household Income",
+       y ="",
+       subtitle = "Weekly Price of Center Based Childcare for Infants") +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_x_continuous(labels = label_dollar()) +
+  theme_bw()
 
 ```
 
 -   Example of **dplyr** pipeline
+Lab 4 Question 6
+
+revised to remove "mc_" from the collumns
 
 ```{r}
 #| label: r-2-2
+
+# Lab 4 Question 6
+
+childcare_by_age <- ca_childcare |>
+  pivot_longer(cols = starts_with("mc_"),
+               names_to = "age_group",
+               values_to = "median_price_by_age") |>
+  mutate(age_group = str_remove(age_group,
+    pattern = "^mc_"),
+    age_group = fct_relevel(age_group,
+                            "infant",
+                            "toddler", 
+                            "preschool")) |>
+  select(age_group, 
+         median_price_by_age, 
+         region, 
+         study_year, 
+         mcsa, 
+         mhi_2018)
 
 ```
 
@@ -206,8 +462,22 @@ I've done this in the following provided assignments:
 
 -   Example -- any context
 
+Lab 5 Second step revised to collapse into one step 
+
+*Can you collapse these steps into one pipeline, that finds the witnesses and obtains their interviews in one dataset?*
+
+
 ```{r}
 #| label: r-3-example
+
+witnesses <- person |>
+  mutate("address_street_name" = as.factor(address_street_name)) |>
+   filter(address_street_name %in% c("Northwestern Dr",
+                                     "Franklin Ave")) |>
+   pivot_wider(names_from = address_street_name,
+               values_from = address_number) |>
+   slice_max(order_by = `Northwestern Dr`)
+ 
 
 ```
 
@@ -224,29 +494,143 @@ I've done this in the following provided assignments:
 
 -   at least two numeric variables
 
+Lab 4 Question 7 revised to fix the comments below 
+
+*What units are these measurements in?*
+
+*I would recommend looking into the scales package, which provides an easy method for getting $ signs on the plot labels, with the label_dollar() function!*
+
 ```{r}
 #| label: dvs-1-num
 
+# LAb 4 Question 7
+
+library(scales)
+
+infant_childcare <- childcare_by_age|>
+  filter(age_group == "infant") |>
+  rename("Median_Weekly_Price" = "median_price_by_age")
+
+
+ggplot(data = infant_childcare, 
+       mapping = aes(x = mhi_2018,
+                     y = Median_Weekly_Price)) +
+  geom_point(alpha = .7,
+             color = "steelblue") +
+  geom_smooth(method = "lm",
+              color = "grey20") +
+  labs(x = "Median Household Income",
+       y ="",
+       subtitle = "Weekly Price of Center Based Childcare for Infants") +
+  scale_y_continuous(labels = label_dollar()) +
+  scale_x_continuous(labels = label_dollar()) +
+  theme_bw()
+  
 ```
 
 -   at least one numeric variable and one categorical variable
 
+Lab 4 Question 6 revised to hit all of the comments below
+*Nice work pivoting the age variable! Can you relabel the values, so your facets have better names? Can you reorder the levels so the facets are in the same order as mine?*
+
+*Your text is quite squished! The size of the text in my plot is not the default size, because it ends up being squished. Can you figure out how to resize the size of the text used in your plot?*
+
+*Can you reorder the colors in the legend so they appear in the same order as the lines in the plot?*
+
+*The final step is to match the colors and theme I used. Personally, I like theme_bw() and the “Accent” palette from the RColorBrewer package.*
+
 ```{r}
 #| label: dvs-2-num-cat
+
+# Lab 4 Question 6
+
+my_colors <- colorRampPalette(brewer.pal(8, "Accent"))(10)
+
+ggplot(data = childcare_by_age, 
+       mapping = aes(x = study_year,
+                     y = median_price_by_age,
+                     color = region))+
+  geom_point()+
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group) +
+  labs(y = "",
+       title = "Weekly Median Price For Center Based Childcare",
+       x = "Study Year") + 
+  scale_x_continuous(breaks = c(2008,
+                              2010,
+                              2012,
+                              2014,
+                              2016,
+                              2018)) +
+  scale_color_manual(values = my_colors, "Regions") +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 8, angle = 45),
+        aspect.ratio = 1)
+
 
 ```
 
 -   at least two categorical variables
 
+Lab 2 Question 16
+
 ```{r}
 #| label: dvs-2-cat
+
+# Genus and species
+
+library(RColorBrewer)
+ggplot(data = surveys,
+       mapping = aes(x = weight,
+                     y = species,
+                     fill = species))+
+  geom_jitter(alpha = .2,
+              color = "grey56")+
+  geom_boxplot(outlier.shape = NA)+
+  labs(x = "Weight In Grams",
+       y = "Species of Animal")+
+  scale_fill_brewer(palette = "Set3")
 
 ```
 
 -   dates (timeseries plot)
 
+Lab 4 Question 6 revised to hit all of the comments below
+*Nice work pivoting the age variable! Can you relabel the values, so your facets have better names? Can you reorder the levels so the facets are in the same order as mine?*
+
+*Your text is quite squished! The size of the text in my plot is not the default size, because it ends up being squished. Can you figure out how to resize the size of the text used in your plot?*
+
+*Can you reorder the colors in the legend so they appear in the same order as the lines in the plot?*
+
+*The final step is to match the colors and theme I used. Personally, I like theme_bw() and the “Accent” palette from the RColorBrewer package.*
 ```{r}
 #| label: dvs-2-date
+
+# LAb 4 Question 6
+
+my_colors <- colorRampPalette(brewer.pal(8, "Accent"))(10)
+
+ggplot(data = childcare_by_age, 
+       mapping = aes(x = study_year,
+                     y = median_price_by_age,
+                     color = region))+
+  geom_point()+
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group) +
+  labs(y = "",
+       title = "Weekly Median Price For Center Based Childcare",
+       x = "Study Year") + 
+  scale_x_continuous(breaks = c(2008,
+                              2010,
+                              2012,
+                              2014,
+                              2016,
+                              2018)) +
+  scale_color_manual(values = my_colors, "Regions") +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 8, angle = 45),
+        aspect.ratio = 1)
+
 
 ```
 
@@ -254,22 +638,124 @@ I've done this in the following provided assignments:
 
 -   I can ensure people don't tilt their head
 
+Lab 4 Question 6 revised to hit all of the comments below
+*Nice work pivoting the age variable! Can you relabel the values, so your facets have better names? Can you reorder the levels so the facets are in the same order as mine?*
+
+*Your text is quite squished! The size of the text in my plot is not the default size, because it ends up being squished. Can you figure out how to resize the size of the text used in your plot?*
+
+*Can you reorder the colors in the legend so they appear in the same order as the lines in the plot?*
+
+*The final step is to match the colors and theme I used. Personally, I like theme_bw() and the “Accent” palette from the RColorBrewer package.*
+
 ```{r}
 #| label: dvs-2-1
+
+# Lab 4 Question 6
+
+my_colors <- colorRampPalette(brewer.pal(8, "Accent"))(10)
+
+ggplot(data = childcare_by_age, 
+       mapping = aes(x = study_year,
+                     y = median_price_by_age,
+                     color = region))+
+  geom_point()+
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group) +
+  labs(y = "",
+       title = "Weekly Median Price For Center Based Childcare",
+       x = "Study Year") + 
+  scale_x_continuous(breaks = c(2008,
+                              2010,
+                              2012,
+                              2014,
+                              2016,
+                              2018)) +
+  scale_color_manual(values = my_colors, "Regions") +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 8, angle = 45), aspect.ratio = 1)
+
 
 ```
 
 -   I can modify the text in my plot to be more readable
 
+Lab 4 Question 6 revised to hit all of the comments below
+*Nice work pivoting the age variable! Can you relabel the values, so your facets have better names? Can you reorder the levels so the facets are in the same order as mine?*
+
+*Your text is quite squished! The size of the text in my plot is not the default size, because it ends up being squished. Can you figure out how to resize the size of the text used in your plot?*
+
+*Can you reorder the colors in the legend so they appear in the same order as the lines in the plot?*
+
+*The final step is to match the colors and theme I used. Personally, I like theme_bw() and the “Accent” palette from the RColorBrewer package.*
+
 ```{r}
 #| label: dvs-2-2
+
+# Lab 4 Question 6
+
+my_colors <- colorRampPalette(brewer.pal(8, "Accent"))(10)
+
+ggplot(data = childcare_by_age, 
+       mapping = aes(x = study_year,
+                     y = median_price_by_age,
+                     color = region))+
+  geom_point()+
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group) +
+  labs(y = "",
+       title = "Weekly Median Price For Center Based Childcare",
+       x = "Study Year") + 
+  scale_x_continuous(breaks = c(2008,
+                              2010,
+                              2012,
+                              2014,
+                              2016,
+                              2018)) +
+  scale_color_manual(values = my_colors, "Regions") +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 8, angle = 45), aspect.ratio = 1)
+
 
 ```
 
 -   I can reorder my legend to align with the colors in my plot
 
+Lab 4 Question 6 revised to hit all of the comments below
+*Nice work pivoting the age variable! Can you relabel the values, so your facets have better names? Can you reorder the levels so the facets are in the same order as mine?*
+
+*Your text is quite squished! The size of the text in my plot is not the default size, because it ends up being squished. Can you figure out how to resize the size of the text used in your plot?*
+
+*Can you reorder the colors in the legend so they appear in the same order as the lines in the plot?*
+
+*The final step is to match the colors and theme I used. Personally, I like theme_bw() and the “Accent” palette from the RColorBrewer package.*
+
 ```{r}
 #| label: dvs-2-3
+
+# Lab 4 Question 6
+
+my_colors <- colorRampPalette(brewer.pal(8, "Accent"))(10)
+
+ggplot(data = childcare_by_age, 
+       mapping = aes(x = study_year,
+                     y = median_price_by_age,
+                     color = region))+
+  geom_point()+
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group) +
+  labs(y = "",
+       title = "Weekly Median Price For Center Based Childcare",
+       x = "Study Year") + 
+  scale_x_continuous(breaks = c(2008,
+                              2010,
+                              2012,
+                              2014,
+                              2016,
+                              2018)) +
+  scale_color_manual(values = my_colors, "Regions") +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 8, angle = 45), aspect.ratio = 1)
+
 
 ```
 
@@ -277,22 +763,124 @@ I've done this in the following provided assignments:
 
 -   I can use non-standard colors
 
+Lab 4 Question 6 revised to hit all of the comments below
+*Nice work pivoting the age variable! Can you relabel the values, so your facets have better names? Can you reorder the levels so the facets are in the same order as mine?*
+
+*Your text is quite squished! The size of the text in my plot is not the default size, because it ends up being squished. Can you figure out how to resize the size of the text used in your plot?*
+
+*Can you reorder the colors in the legend so they appear in the same order as the lines in the plot?*
+
+*The final step is to match the colors and theme I used. Personally, I like theme_bw() and the “Accent” palette from the RColorBrewer package.*
+
 ```{r}
 #| label: dvs-3-1
+
+# Lab 4 Question 6
+
+my_colors <- colorRampPalette(brewer.pal(8, "Accent"))(10)
+
+ggplot(data = childcare_by_age, 
+       mapping = aes(x = study_year,
+                     y = median_price_by_age,
+                     color = region))+
+  geom_point()+
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group) +
+  labs(y = "",
+       title = "Weekly Median Price For Center Based Childcare",
+       x = "Study Year") + 
+  scale_x_continuous(breaks = c(2008,
+                              2010,
+                              2012,
+                              2014,
+                              2016,
+                              2018)) +
+  scale_color_manual(values = my_colors, "Regions") +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 8, angle = 45), aspect.ratio = 1)
+
 
 ```
 
 -   I can use annotations
 
+Lab 4 Question 6 revised to hit all of the comments below
+*Nice work pivoting the age variable! Can you relabel the values, so your facets have better names? Can you reorder the levels so the facets are in the same order as mine?*
+
+*Your text is quite squished! The size of the text in my plot is not the default size, because it ends up being squished. Can you figure out how to resize the size of the text used in your plot?*
+
+*Can you reorder the colors in the legend so they appear in the same order as the lines in the plot?*
+
+*The final step is to match the colors and theme I used. Personally, I like theme_bw() and the “Accent” palette from the RColorBrewer package.*
+
 ```{r}
 #| label: dvs-3-2
+
+# Lab 4 Question 6
+
+my_colors <- colorRampPalette(brewer.pal(8, "Accent"))(10)
+
+ggplot(data = childcare_by_age, 
+       mapping = aes(x = study_year,
+                     y = median_price_by_age,
+                     color = region))+
+  geom_point()+
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group) +
+  labs(y = "",
+       title = "Weekly Median Price For Center Based Childcare",
+       x = "Study Year") + 
+  scale_x_continuous(breaks = c(2008,
+                              2010,
+                              2012,
+                              2014,
+                              2016,
+                              2018)) +
+  scale_color_manual(values = my_colors, "Regions") +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 8, angle = 45), aspect.ratio = 1)
 
 ```
 
 -   I can be creative...
 
+Lab 4 Question 6 revised to hit all of the comments below
+*Nice work pivoting the age variable! Can you relabel the values, so your facets have better names? Can you reorder the levels so the facets are in the same order as mine?*
+
+*Your text is quite squished! The size of the text in my plot is not the default size, because it ends up being squished. Can you figure out how to resize the size of the text used in your plot?*
+
+*Can you reorder the colors in the legend so they appear in the same order as the lines in the plot?*
+
+*The final step is to match the colors and theme I used. Personally, I like theme_bw() and the “Accent” palette from the RColorBrewer package.*
+
 ```{r}
 #| label: dvs-3-3
+
+# Lab 4 Question 6
+
+my_colors <- colorRampPalette(brewer.pal(8, "Accent"))(10)
+
+ggplot(data = childcare_by_age, 
+       mapping = aes(x = study_year,
+                     y = median_price_by_age,
+                     color = region))+
+  geom_point()+
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group) +
+  labs(y = "",
+       title = "Weekly Median Price For Center Based Childcare",
+       x = "Study Year") + 
+  scale_x_continuous(breaks = c(2008,
+                              2010,
+                              2012,
+                              2014,
+                              2016,
+                              2018)) +
+  scale_color_manual(values = my_colors, "Regions") +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 8, angle = 45), aspect.ratio = 1)
+
+
 
 ```
 
@@ -300,15 +888,36 @@ I've done this in the following provided assignments:
 
 -   Example using `summarize()`
 
+Lab 4 Question 5 revised to fix the comment below and to include the across function 
+
+*You need to summarize each region for 2008!*
+
 ```{r}
 #| label: dvs-4-summarize
+
+ca_childcare|> 
+  filter(study_year == 2018) |>
+  group_by(region) |>
+  summarize(across(starts_with("mc_"), median, .names = "Median_{.col}")) |>
+  slice_min(Median_mc_Infant)
 
 ```
 
 -   Example using `across()`
 
+Lab 4 Question 5 revised to fix the comment below and to include the across function 
+
+*You need to summarize each region for 2008!*
+
 ```{r}
 #| label: dvs-4-across
+
+
+ca_childcare|> 
+  filter(study_year == 2018) |>
+  group_by(region) |>
+  summarize(across(starts_with("mc_"), median, .names = "Median_{.col}")) |>
+  slice_min(Median_mc_Infant)
 
 ```
 
@@ -316,15 +925,47 @@ I've done this in the following provided assignments:
 
 -   Example 1
 
+Lab 4 Question 5 revised to fix the comment below and to include the across function 
+
+*You need to summarize each region for 2008!*
+
+
+
 ```{r}
 #| label: dvs-5-1
+
+ca_childcare|> 
+  filter(study_year == 2018) |>
+  group_by(region) |>
+  summarize(across(starts_with("mc_"),
+                   median,
+                   .names = "Median_{.col}")) |>
+  slice_min(Median_mc_Infant)
 
 ```
 
 -   Example 2
+Lab 4 Question 4 revised to fix the comments below 
+
+*You need to summarize each region for each year!*
+
+*Can you give your column names better titles, so the reader knows what "2008" and "2018" represent? What are the values stored in these columns?*
+
 
 ```{r}
 #| label: dvs-5-2
+
+ca_childcare |>
+   group_by(region, 
+            study_year) |>
+  summarize(Median_Income = median(mhi_2018)) |>
+   pivot_wider(id_cols = region,
+               names_from = study_year,
+               values_from = Median_Income) |>
+   select( `2018`, `2008`) |>
+  rename("Median_Income_2008" = `2008`,
+         "Median_Income_2018" = `2018`) |>
+  arrange(Median_Income_2018)
 
 ```
 
@@ -332,15 +973,51 @@ I've done this in the following provided assignments:
 
 -   Example 1
 
+Lab 4 Question 4 revised to fix the comments below 
+
+*You need to summarize each region for each year!*
+
+*Can you give your column names better titles, so the reader knows what "2008" and "2018" represent? What are the values stored in these columns?*
+
+
 ```{r}
 #| label: dvs-6-1
+
+# Lab 4 
+# Uses arrange to make the output clear
+
+ca_childcare |>
+   group_by(region, 
+            study_year) |>
+  summarize(Median_Income = median(mhi_2018)) |>
+   pivot_wider(id_cols = region,
+               names_from = study_year,
+               values_from = Median_Income) |>
+   select( `2018`, `2008`) |>
+  rename("Median_Income_2008" = `2008`,
+         "Median_Income_2018" = `2018`) |>
+  arrange(Median_Income_2018)
 
 ```
 
 -   Example 2
 
+Lab 5 Second step revised to collapse into one step 
+
+*Can you collapse these steps into one pipeline, that finds the witnesses and obtains their interviews in one dataset?*
+
+
 ```{r}
 #| label: dvs-6-2
+
+
+witnesses <- person |>
+  mutate("address_street_name" = as.factor(address_street_name)) |>
+   filter(address_street_name %in% c("Northwestern Dr",
+                                     "Franklin Ave")) |>
+   pivot_wider(names_from = address_street_name,
+               values_from = address_number) |>
+   slice_max(order_by = `Northwestern Dr`)
 
 ```
 
@@ -348,15 +1025,47 @@ I've done this in the following provided assignments:
 
 -   Example 1
 
+Lab 5 Second step revised to collapse into one step 
+
+*Can you collapse these steps into one pipeline, that finds the witnesses and obtains their interviews in one dataset?*
+
+
 ```{r}
 #| label: dvs-7-1
+
+witnesses <- person |>
+  mutate("address_street_name" = as.factor(address_street_name)) |>
+   filter(address_street_name %in% c("Northwestern Dr",
+                                     "Franklin Ave")) |>
+   pivot_wider(names_from = address_street_name,
+               values_from = address_number) |>
+   slice_max(order_by = `Northwestern Dr`)
 
 ```
 
 -   Example 2
 
+Lab 4 Question 4 revised to fix the comments below 
+
+*You need to summarize each region for each year!*
+
+*Can you give your column names better titles, so the reader knows what "2008" and "2018" represent? What are the values stored in these columns?*
+
+
 ```{r}
 #| label: dvs-7-2
+
+ca_childcare |>
+   group_by(region, 
+            study_year) |>
+  summarize(Median_Income = median(mhi_2018)) |>
+   pivot_wider(id_cols = region,
+               names_from = study_year,
+               values_from = Median_Income) |>
+   select( `2018`, `2008`) |>
+  rename("Median_Income_2008" = `2008`,
+         "Median_Income_2018" = `2018`) |>
+  arrange(Median_Income_2018)
 
 ```
 
@@ -366,15 +1075,37 @@ I've done this in the following provided assignments:
 
 -   using a single function call with multiple inputs (rather than multiple function calls)
 
+Lab 5 Step 1 revised
+*Could you collapse these two steps into one step?*
+
 ```{r}
 #| label: pe-1-one-call
+
+sql_city_reports <- crime_scene_report|>
+  mutate(date = ymd(date))|>
+  filter(city == "SQL City",
+         type == "murder",
+         date == ymd(2018-01-15))
+
+
 
 ```
 
 -   `across()`
 
+Lab 4 Question 5 revised to fix the comment below and to include the across function 
+
+*You need to summarize each region for 2008!*
 ```{r}
 #| label: pe-1-across
+
+ca_childcare|> 
+  filter(study_year == 2018) |>
+  group_by(region) |>
+  summarize(across(starts_with("mc_"),
+                   median,
+                   .names = "Median_{.col}")) |>
+  slice_min(Median_mc_Infant)
 
 ```
 
@@ -405,9 +1136,23 @@ I've done this in the following provided assignments:
 
 -   `across()`
 
+Lab 4 Question 5 revised to fix the comment below and to include the across function 
+
+*You need to summarize each region for 2008!*
+
 ```{r}
 #| label: pe-3-across
 
+# Modified Lab 4 Code 
+# Code now includes the across function 
+
+ca_childcare|> 
+  filter(study_year == 2018) |>
+  group_by(region) |>
+  summarize(across(starts_with("mc_"),
+                   median,
+                   .names = "Median_{.col}")) |>
+  slice_min(Median_mc_Infant)
 ```
 
 -   `map()` function with **one** input (e.g., `map()`, `map_chr()`, `map_dbl()`, etc.)
@@ -428,15 +1173,82 @@ I've done this in the following provided assignments:
 
 -   I can use functions which are not superseded or deprecated
 
+Lab 4 Question 5 revised to fix the comment below and to include the across function 
+
+*You need to summarize each region for 2008!*
+
 ```{r}
 #| label: pe-4-1
+
+# Modifies from Lab 4 
+# Now uses the across function 
+
+ca_childcare|> 
+  filter(study_year == 2018) |>
+  group_by(region) |>
+  summarize(across(starts_with("mc_"),
+                   median,
+                   .names = "Median_{.col}")) |>
+  slice_min(Median_mc_Infant)
 
 ```
 
 -   I can connect a data wrangling pipeline into a `ggplot()`
 
+Lab 4 Question 6 revised to hit all of the comments below
+*Nice work pivoting the age variable! Can you relabel the values, so your facets have better names? Can you reorder the levels so the facets are in the same order as mine?*
+
+*Your text is quite squished! The size of the text in my plot is not the default size, because it ends up being squished. Can you figure out how to resize the size of the text used in your plot?*
+
+*Can you reorder the colors in the legend so they appear in the same order as the lines in the plot?*
+
+*The final step is to match the colors and theme I used. Personally, I like theme_bw() and the “Accent” palette from the RColorBrewer package.*
+
+
 ```{r}
 #| label: pe-4-2
+
+library(RColorBrewer)
+
+childcare_by_age <- ca_childcare |>
+  pivot_longer(cols = starts_with("mc_"),
+               names_to = "age_group",
+               values_to = "median_price_by_age")|>
+  mutate(age_group = str_remove(age_group,
+    pattern = "^mc_"), age_group = fct_relevel(age_group,
+                                               "infant",
+                                               "toddler",
+                                               "preschool")) |>
+  select(age_group, 
+         median_price_by_age, 
+         region, 
+         study_year, 
+         mcsa, 
+         mhi_2018)
+
+my_colors <- colorRampPalette(brewer.pal(8, "Accent"))(10)
+
+ggplot(data = childcare_by_age, 
+       mapping = aes(x = study_year,
+                     y = median_price_by_age,
+                     color = region)) +
+  geom_point() +
+  geom_smooth(method = "loess") +
+  facet_wrap(~ age_group) +
+  labs(y = "",
+       title = "Weekly Median Price For Center Based Childcare",
+       x = "Study Year") + 
+  scale_x_continuous(breaks = c(2008,
+                              2010,
+                              2012,
+                              2014,
+                              2016,
+                              2018)) +
+  scale_color_manual(values = my_colors, "Regions") +
+  theme_bw() +
+  theme(axis.text.x = element_text(size = 8, angle = 45), aspect.ratio = 1)
+
+
 
 ```
 
@@ -462,15 +1274,27 @@ I've done this in the following provided assignments:
 
 -   Example 1
 
+Lab 4 Question 8 
+*These are not the correct variables you should be analyzing*
+This code is revised to include the correct variables. 
+
 ```{r}
 #| label: dsm-2-1
 
+# Lab 4
+
+lm( Median_Weekly_Price ~ mhi_2018, data = infant_childcare)
+summary(lm( Median_Weekly_Price ~ mhi_2018, data = infant_childcare))
 ```
 
 -   Example 2
-
+Lab 2 Question 17
 ```{r}
 #| label: dsm-2-2
+
+species_mod <- aov(weight ~ species, data = surveys)
+
+summary(species_mod)
 
 ```
 
@@ -478,14 +1302,31 @@ I've done this in the following provided assignments:
 
 <!-- How did you revise your thinking throughout the course? How did you revise your thinking on the code examples you have provided in your portfolio? -->
 
+I have revised my thinking and code throughout this course, and have seen the benefits of doing so. I have only revised labs 3, 4, and 5 (not yet submitted revisions). However, doing so has allowed me to actively correct mistakes that I did not know I had made when initially submitting. Specifically when revising lab 4 I noticed certain coding habits that I have such as creating too many objects and aesthetic spacing issues. Being able to go back and spend time fixing these mistakes is where I have seen the most growth within my coding. 
+
+For this assignment I also made some revision, and created some new code to fulfill some of the learning targets. For example, I had not yet used the mutate function on a date when starting this portfolio. I was able to try out something new and be creative when deciding on how to implement this skill into code I already had on hand. Additionally I had not used the across() function yet in my labs. Implementing the across function in this portfolio has helped me realize how important this function can be. 
+
 <!-- For the revisions included in your Portfolio, to help me understand the nature of your revisions, please denote somehow the feedback I provided you (e.g., boldface, italics, colored text) before your revisions. -->
 
 ## Extending My Thinking
 
 <!-- How did you extended your thinking throughout the course? How did you extend your thinking on the code examples you have provided in your portfolio? -->
 
+This course has allowed me to extend my thinking and learning by letting me be creative, and find multiple ways to complete a task. I see myself extending my thinking the most when working with data visualization. I can genuinely say that I had fun recreating the graph from Lab 4 Question 6. I had to push myself to find what functions would give me the final result that I wanted. I also got to experiment more with colors and text options. 
+
+While I enjoy making graphs the most, I have also extended my thinking when it comes to working with data. For example, during lab 5 I was able to show creativity through code by pivoting a data set wider and using the slice.max() function to do a task that could have also been done by filtering.
+
 ## Peer Support & Collaboration
 
 <!-- Include an image or a description of feedback you gave that you are proud of (either in a peer review or in Discord). -->
 
+In the peer review for lab 4 I commented on my classmate's formatting and style. They had decided to implement a theme into their document and had good headers that added to the style of their document. I made sure to mention this, but to also mention that there were certain places in their code where the lack of returns made it hard to follow, as well as calling attention to some small tweaks that would increase readability for the viewer withing their graphs. 
+
 <!-- Include a description of how you grew as a collaborator through the weekly pair programming activities.   -->
+
+I have grown as a collaborator during the practice activities by improving my communication and confidence. I started out very timid on the first practice activity because I did not want to mess up my partner or let them know where they may have been going wrong. Now I know the importance of giving honest feedback to my partner. It not only ensures that our practice activities are as correct as they can be, but also keeps and open line of communication. I have also enjoyed working with a partner because it forces me to think of different ways of doing things that may be more efficient than what I would have done working by myself. 
+
+
+
+
+
