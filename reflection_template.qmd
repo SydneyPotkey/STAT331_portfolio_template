@@ -1520,7 +1520,7 @@ In the peer review for lab 4 I commented on my classmate's formatting and style.
 I have grown as a collaborator during the practice activities by improving my communication and confidence. I started out very timid on the first practice activity because I did not want to mess up my partner or let them know where they may have been going wrong. Now I know the importance of giving honest feedback to my partner. It not only ensures that our practice activities are as correct as they can be, but also keeps and open line of communication. I have also enjoyed working with a partner because it forces me to think of different ways of doing things that may be more efficient than what I would have done working by myself.
 
 
-#Lightening Round 
+## Lightening Round 
 Answer each of the following questions with one sentence including a brief explanation.
 
 Finish the sentence with another student's name: "If [Name of Student] doesn't earn an A, then nobody should, because…" Explain your choice and your reasoning.
@@ -1543,7 +1543,7 @@ The part of this class that surprised me the most was how easy coding can be whe
 
 Have an open mind and don't be afraid to restart when you run into problems.
 
-#Efficiency 
+## Efficiency 
 As we've said in the class efficiency is a pivotal component of statistical computing (and data science). In this essay, give an explanation of what that term "efficiency" means in relation to statistical computing and describe some places where you encountered efficiency and understood its importance. Your essay should address the following questions:
 
 What is the definition of "efficiency"?
@@ -1558,7 +1558,7 @@ Where did you encounter efficiency, and what were some "a-ha" moments you had ab
 
 Efficiency in the context of this class means creating code that reaches the end goal in a quick, effective, and non deprecated way. Efficiency allows you to create code that does not rely as heavily on user input. This is important because as I have discovered this quarter user error is extremely common. 
 
-#Data Scientist 
+## Data Scientist 
 Describe how you have improved as a practitioner and student of data science this quarter through your work in the course.
 
 Focus specifically on data science concepts and the skills we employed in learning them, not a laundry list of topics that you learned (those are in the syllabus, so I know them already).
