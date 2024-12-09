@@ -6,16 +6,21 @@ editor: visual
 
 **Answer each of the following questions with *one sentence* including a brief explanation.**
 
-1. Finish the sentence with another student’s name: "If [Name of Student] doesn’t earn an A, then nobody should, because..." Explain your choice and your reasoning.
+1.  Finish the sentence with another student's name: "If \[Name of Student\] doesn't earn an A, then nobody should, because..." Explain your choice and your reasoning.
 
+2.  What was the most difficult part of the class for you? List a general topic, a specific problem, a kind of work we did, etc. and explain why.
 
-2. What was the most difficult part of the class for you? List a general topic, a specific problem, a kind of work we did, etc. and explain why.
+3.  What was the easiest part of the class for you? Explain why.
 
+4.  What part of the class surprised or interested you the most? Explain why.
 
-3. What was the easiest part of the class for you? Explain why.
+5.  Give one piece of advice to a student just beginning a quarter of STAT 331 that will help them be successful in learning.
 
-
-4. What part of the class surprised or interested you the most? Explain why.
-
-
-5. Give one piece of advice to a student just beginning a quarter of STAT 331 that will help them be successful in learning.
+```{=html}
+<!-- -->
+```
+1.  If Emi does not earn an A then nobody should. I worked with Emi during a few partner activities, her understanding and problem solving skills were obvious and impressive when she not only was the developer, but also when she was the coder.
+2.  The most difficult part of the class for me was the first section on function writing, because I had become so used to the previous style of content, but it did help me to improve my understanding of R as a whole and not just as a data filtering tool.
+3.  The easiest part of this class for me was the practice activities because i enjoyed the format and collaborating with classmates.
+4.  The part of this class that surprised me the most was how easy coding can be when you attack it in the correct way; in general I am less intimidated by programming now than I was ten weeks ago.
+5.  Have an open mind and don't be afraid to restart when you run into problems.

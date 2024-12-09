@@ -58,7 +58,7 @@ military <- read_xlsx(here::here("data",
 
 # From Check in 2.3 
 
-ages<- read_delim("Week 2/week 2 data/ages_space.txt")
+ages<- read_delim(here:here("Week 2/week 2 data/ages_space.txt"))
 
 ```
 
@@ -146,15 +146,17 @@ Lab 5 Second step revised to collapse into one step
 ```{r}
 #| label: wd-3-factor
 
-# Lab 5
+#Lab 8 Question 2
 
-witnesses <- person |>
-  mutate("address_street_name" = as.factor(address_street_name)) |>
-   filter(address_street_name %in% c("Northwestern Dr",
-                                     "Franklin Ave")) |>
-   pivot_wider(names_from = address_street_name,
-               values_from = address_number) |>
-   slice_max(order_by = `Northwestern Dr`)
+teacher_evals |>
+  map_at(.at = c("teacher_id",
+                 "weekday",
+                 "academic_degree",
+                 "seniority",
+                 "sex"), 
+         .f = ~as.factor(.x)
+         ) |>
+  bind_cols()
  
  
 
@@ -296,6 +298,7 @@ suspect_check_in|>
 
 #joins the witnesses and their information that we are interested in with their corresponding interviews
 #returns only the 2 interviews and persons info
+#also works w an inner join
 
 witness_interviews <- right_join(interview,
                                  witnesses2,
@@ -318,15 +321,38 @@ witness_interviews <- inner_join(interview,
 ```
 
 **WD-6: I can use filtering joins to filter rows from a data frame.**
+Lab 4 Question 1
 
 -   `semi_join()`
+
+Lab 4 Question 1
+-this is a hypothetical example where we want to compare California child care costs to the rest of the nation 
 
 ```{r}
 #| label: wd-6-semi
 
+california_counties <- counties |>
+  filter(state_abbreviation == "CA")
+
+
+
+non_ca_childcare <- anti_join(childcare_costs, 
+                           california_counties, 
+                           by = "county_fips_code")
+
+ca_childcare <- semi_join(childcare_costs, 
+                           california_counties, 
+                           by = "county_fips_code")
+
+
 ```
 
 -   `anti_join()`
+Lab 4 Question 1
+-this is a hypothetical example where we want to compare California child care costs to the rest of the nation 
+-anti join works here for two reasons
+  - filtering for California and then using an anti join is efficient because it allows me to use the California_counties data set that I have already created to get another data set with only non California states
+  -it is also helpful because we are only interested in the data in the childcare costs data set and anti join only keeps data from the first data set
 
 ```{r}
 #| label: wd-6-anti
@@ -334,7 +360,12 @@ witness_interviews <- inner_join(interview,
 california_counties <- counties |>
   filter(state_abbreviation == "CA")
 
-ca_childcare <- anti_join(childcare_costs, 
+
+non_ca_childcare <- anti_join(childcare_costs, 
+                           california_counties, 
+                           by = "county_fips_code")
+
+ca_childcare <- semi_join(childcare_costs, 
                            california_counties, 
                            by = "county_fips_code")
 
@@ -413,20 +444,24 @@ Lab 4 Question 7 revised to fix the comments below
 ggplot(data = infant_childcare, 
        mapping = aes(x = mhi_2018,
                      y = Median_Weekly_Price)) +
+  #adding alpha so more of the data is visible/doesn't just look like an opaque blob of data
   geom_point(alpha = .7,
              color = "steelblue") +
+  #linear regression model to show trend
   geom_smooth(method = "lm",
               color = "grey20") +
   labs(x = "Median Household Income",
        y ="",
        subtitle = "Weekly Price of Center Based Childcare for Infants") +
+  #adding dollar signs to labels
   scale_y_continuous(labels = label_dollar()) +
   scale_x_continuous(labels = label_dollar()) +
   theme_bw()
 
 ```
 
--   Example of **dplyr** pipeline Lab 4 Question 6
+-   Example of **dplyr** pipeline 
+Lab 4 Question 6
 
 revised to remove "mc\_" from the collumns
 
@@ -436,15 +471,19 @@ revised to remove "mc\_" from the collumns
 # Lab 4 Question 6
 
 childcare_by_age <- ca_childcare |>
+  #pivoting to one column with age group
   pivot_longer(cols = starts_with("mc_"),
                names_to = "age_group",
                values_to = "median_price_by_age") |>
+  #removing mc 
   mutate(age_group = str_remove(age_group,
     pattern = "^mc_"),
+    #reordering to mimic example plot
     age_group = fct_relevel(age_group,
                             "infant",
                             "toddler", 
                             "preschool")) |>
+  #selecting columns used in plot
   select(age_group, 
          median_price_by_age, 
          region, 
@@ -454,24 +493,24 @@ childcare_by_age <- ca_childcare |>
 
 ```
 
--   Example of function formatting Lab 7 Question Question 4
+-   Example of function formatting 
+Lab 7 Question Question 4
 
 ```{r}
 #| label: r-2-3
-rescale_01 <- function(vec){
-  if(!is.numeric(vec)) {
-    stop("Must be Numeric")
-  }
+
+randomBabies <- function(nBabies){
+
+  parents <- 1:nBabies
+  babies <- sample(1:nBabies)
+  matches <- sum(babies == parents)
   
-  if(length(vec) <= 1) {
-    stop("vector must have more than 1 entry")
-  }
-  scaled_vec <- (vec - min(vec, na.rm = TRUE)) / (max(vec, na.rm = TRUE) - min(vec, na.rm = TRUE))
-  
-  return(scaled_vec)
-  
+  return(matches)
 }
 
+results <- map_int(.x = 1:10000,
+                   .f = ~ randomBabies(nBabies = 4)
+                   )
 
 ```
 
@@ -498,10 +537,27 @@ witnesses <- person |>
 ```
 
 -   Example of function stops
+Lab 7 Question 4 
+-revised to include range function 
 
 ```{r}
 #| label: r-3-function-stops
+rescale_01 <- function(vec){
+  if(!is.numeric(vec)) {
+    stop("Must be Numeric")
+  }
+  
+  if(length(vec) <= 1) {
+    stop("vector must have more than 1 entry")
+  }
+  rng <- range(vec)
+  scaled_vec <- (vec - rng[1](vec, na.rm = TRUE)) / (rng[2](vec, na.rm = TRUE) - rng[1](vec, na.rm = TRUE))
+  rng <- range(vec)
 
+  
+  return(scaled_vec)
+  
+}
 ```
 
 ## Data Visualization & Summarization
@@ -929,20 +985,24 @@ ggplot(data = childcare_by_age,
 
 -   Example using `summarize()`
 
-Lab 4 Question 5 revised to fix the comment below and to include the across function
+Lab 4 Question 4 
 
-*You need to summarize each region for 2008!*
+
 
 ```{r}
 #| label: dvs-4-summarize
 
-ca_childcare|> 
-  filter(study_year == 2018) |>
-  group_by(region) |>
-  summarize(across(starts_with("mc_"),
-                   median,
-                   .names = "Median_{.col}")) |>
-  slice_min(Median_mc_Infant)
+ca_childcare |>
+   group_by(region, 
+            study_year) |>
+  summarize(Median_Income = median(mhi_2018)) |>
+   pivot_wider(id_cols = region,
+               names_from = study_year,
+               values_from = Median_Income) |>
+   select( `2018`, `2008`) |>
+  rename("Median_Income_2008" = `2008`,
+         "Median_Income_2018" = `2018`) |>
+  arrange(Median_Income_2018)
 
 ```
 
@@ -1014,29 +1074,40 @@ ca_childcare |>
 
 -   Example 1
 
-Lab 4 Question 4 revised to fix the comments below
-
-*You need to summarize each region for each year!*
-
-*Can you give your column names better titles, so the reader knows what "2008" and "2018" represent? What are the values stored in these columns?*
-
+Lab 8 Question 3
 ```{r}
 #| label: dvs-6-1
 
-# Lab 4 
-# Uses arrange to make the output clear
+library(knitr)
+library(kableExtra)
 
-ca_childcare |>
-   group_by(region, 
-            study_year) |>
-  summarize(Median_Income = median(mhi_2018)) |>
-   pivot_wider(id_cols = region,
-               names_from = study_year,
-               values_from = Median_Income) |>
-   select( `2018`, `2008`) |>
-  rename("Median_Income_2008" = `2008`,
-         "Median_Income_2018" = `2018`) |>
-  arrange(Median_Income_2018)
+teacher_evals |>
+  distinct(teacher_id, .keep_all =TRUE) |>
+  mutate(sen_cat = if_else(seniority < 4,
+                           "Junior",
+                           "Senior")) |>
+  pivot_longer(cols = c(gender, academic_degree, sen_cat),
+               names_to = "demographics",
+               values_to = "values") |>
+  count(values) |>
+  pivot_wider( names_from = values,
+               values_from = n) |>
+  rename(Masters = ma, Doctorate = dr,
+         `No Degree` = no_dgr,
+         Professor = prof,
+         Female = female,
+         Male = male) |>
+  select(Female, 
+         Male, Junior,
+         Senior,
+         `No Degree`,
+         Masters,
+         Doctorate,
+         Professor) |>
+  kable(format = "html") |>
+  kable_styling(bootstrap_options = "striped",
+                position = "right")
+  
 
 ```
 
@@ -1082,27 +1153,39 @@ witnesses <- person |>
 ```
 
 -   Example 2
-
-Lab 4 Question 4 revised to fix the comments below
-
-*You need to summarize each region for each year!*
-
-*Can you give your column names better titles, so the reader knows what "2008" and "2018" represent? What are the values stored in these columns?*
-
+Lab 8 Question 3
 ```{r}
 #| label: dvs-7-2
 
-ca_childcare |>
-   group_by(region, 
-            study_year) |>
-  summarize(Median_Income = median(mhi_2018)) |>
-   pivot_wider(id_cols = region,
-               names_from = study_year,
-               values_from = Median_Income) |>
-   select( `2018`, `2008`) |>
-  rename("Median_Income_2008" = `2008`,
-         "Median_Income_2018" = `2018`) |>
-  arrange(Median_Income_2018)
+
+teacher_evals |>
+  distinct(teacher_id, .keep_all =TRUE) |>
+  mutate(sen_cat = if_else(seniority < 4,
+                           "Junior",
+                           "Senior")) |>
+  pivot_longer(cols = c(gender, academic_degree, sen_cat),
+               names_to = "demographics",
+               values_to = "values") |>
+  count(values) |>
+  pivot_wider( names_from = values,
+               values_from = n) |>
+  rename(Masters = ma, Doctorate = dr,
+         `No Degree` = no_dgr,
+         Professor = prof,
+         Female = female,
+         Male = male) |>
+  select(Female, 
+         Male, Junior,
+         Senior,
+         `No Degree`,
+         Masters,
+         Doctorate,
+         Professor) |>
+  kable(format = "html") |>
+  kable_styling(bootstrap_options = "striped",
+                position = "right")
+  
+
 
 ```
 
@@ -1300,7 +1383,9 @@ Lab 4 Question 6 revised to hit all of the comments below *Nice work pivoting th
 
 library(RColorBrewer)
 
-childcare_by_age <- ca_childcare |>
+my_colors <- colorRampPalette(brewer.pal(8, "Accent"))(10)
+
+ca_childcare |>
   pivot_longer(cols = starts_with("mc_"),
                names_to = "age_group",
                values_to = "median_price_by_age")|>
@@ -1314,11 +1399,8 @@ childcare_by_age <- ca_childcare |>
          region, 
          study_year, 
          mcsa, 
-         mhi_2018)
-
-my_colors <- colorRampPalette(brewer.pal(8, "Accent"))(10)
-
-ggplot(data = childcare_by_age, 
+         mhi_2018) |> 
+  ggplot(data = childcare_by_age, 
        mapping = aes(x = study_year,
                      y = median_price_by_age,
                      color = region)) +
